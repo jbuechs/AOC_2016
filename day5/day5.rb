@@ -3,22 +3,55 @@ require 'pry'
 STARTING_STRING = '00000'
 DOOR_ID = 'uqwqemis'
 
-def find_next_character(start_index)
-  hashed_door = ''
-  while hashed_door[0..4] != STARTING_STRING do
-    hashed_door = Digest::MD5.hexdigest(DOOR_ID + start_index.to_s)
-    return { index: start_index, pass_chr: hashed_door[6], pass_loc: hashed_door[5].to_i } if hashed_door[0..4] == STARTING_STRING
-    start_index += 1
+class Password
+  def initialize
+    @pass_loc = -1
+    @pass = Array(nil)
+    @door_index = 0
+  end
+
+  def position_valid?(pos)
+    in_range?(pos.to_i) && is_int?(pos)
+  end
+
+  def get_password
+    @pass[0..7].join
+  end
+
+  def not_found?
+    get_password.nil? or get_password.length != 8
+  end
+
+  def find_next_character
+    hashed_door = ''
+    new_pass_loc = -1
+    until hashed_door[0..4] == STARTING_STRING && position_valid?(new_pass_loc) do
+      hashed_door = Digest::MD5.hexdigest(DOOR_ID + @door_index.to_s)
+      new_pass_loc = hashed_door[5]
+      pass_chr = hashed_door[6]
+      if position_valid?(new_pass_loc) && hashed_door[0..4] == STARTING_STRING
+        @pass[new_pass_loc.to_i] ||= pass_chr
+        @door_index += 1
+        return
+      end
+      @door_index += 1
+    end
+  end
+
+  private
+  def is_int?(chr)
+    chr.to_i.to_s == chr
+  end
+
+  def in_range?(num)
+    num >= 0 && num <= 7
   end
 end
 
-password = Array(nil)
-data = find_next_character(0)
-password[data[:pass_loc]] ||= data[:pass_chr]
-while !password[0].nil? && !password[1].nil? && !password[2].nil? && !password[3].nil? && !password[4].nil? && !password[5].nil? && !password[6].nil? && !password[7].nil? do
-  data = find_next_character(data[:index] + 1)
-  binding.pry
-  password[data[:pass_loc]] ||= data[:pass_chr]
+password = Password.new
+while password.not_found? do
+  password.find_next_character
+  puts password.get_password
 end
 
-puts password[0..7]
+puts password.get_password
