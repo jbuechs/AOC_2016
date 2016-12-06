@@ -43,10 +43,24 @@ class ColumnCounter
     message
   end
 
+  def second_decoded_message
+    message = ""
+    @num_col.times do |n|
+      message += find_least_frequent(@column_stats[n])
+    end
+    message
+  end
+
   def find_mode(arr)
     grouped_arr = arr.group_by { |ch| ch}
-    mode_arr = grouped_arr.values.max_by { |arr| arr.length }
+    mode_arr = grouped_arr.values.max_by { |ch_arr| ch_arr.length }
     mode_arr[0]
+  end
+
+  def find_least_frequent(arr)
+    grouped_arr = arr.group_by { |ch| ch}
+    min_arr = grouped_arr.values.min_by { |ch_arr| ch_arr.length }
+    min_arr[0]
   end
 end
 
@@ -59,4 +73,4 @@ init_object = {
 message_reader = MessageReader.new(init_object)
 message_reader.read_file
 
-puts column_counter.decoded_message
+puts column_counter.second_decoded_message
