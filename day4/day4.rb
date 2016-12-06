@@ -7,8 +7,24 @@ class EncryptedRoom
     input_chunks = code.gsub(/\W/, ' ').split(' ')
     @checksum = input_chunks.pop
     @sector_id = input_chunks.pop.to_i
-    # @encrypted_name = input_chunks.join
+    @encoded_name = input_chunks
     @most_common_letters = analyze_letters(input_chunks.join)
+  end
+
+  def decoded_name
+    decoded_words = []
+    delta = @sector_id % 26
+    @encoded_name.each do |word|
+      letters = word.split('')
+      decoded_letters = letters.map do |ch|
+        new_ord = ch.ord + delta
+        new_ord -= 26 if new_ord > 122
+        new_ord.chr
+      end
+      decoded_word = decoded_letters.join
+      decoded_words.push(decoded_word)
+    end
+    @decoded_name = decoded_words.join(" ")
   end
 
   def analyze_letters(str)
@@ -47,7 +63,9 @@ class InputReader
 
   def read_file
     File.foreach(@filename) do |line|
-      @encrypted_rooms.push(EncryptedRoom.new(line))
+      room = EncryptedRoom.new(line)
+      @encrypted_rooms.push(room)
+      puts(room.decoded_name, room.sector_id)
     end
   end
 end
@@ -56,4 +74,6 @@ input = InputReader.new('input.txt')
 input.read_file
 sector_id_sum = 0
 input.encrypted_rooms.each { |room| sector_id_sum += room.sector_id if room.real? }
+real_rooms = input.select { |room| room.real? }
+real_rooms.each { |room| puts room.decoded_name }
 puts sector_id_sum
