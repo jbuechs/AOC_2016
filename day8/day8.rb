@@ -42,20 +42,13 @@ class Screen
 
   def rotate_column(x, delta)
     old_col = get_column(x)
-    new_col = Array.new(@height)
-    old_lit_pixels = old_col.each_index.select { |i| old_col[i] }
-    new_lit_pixels = old_lit_pixels.map { |i| (i + delta) % @height }
-    new_lit_pixels.each { |pix| new_col[pix] = true }
+    new_col = old_col[-delta..-1] + old_col[0..-delta - 1]
     replace_column(x, new_col)
   end
 
   def rotate_row(y, delta)
     old_row = get_row(y)
-    return nil if old_row.nil?
-    new_row = Array.new(@width)
-    old_lit_pixels = old_row.each_index.select { |i| old_row[i] }
-    new_lit_pixels = old_lit_pixels.map { |i| (i + delta) % @width }
-    new_lit_pixels.each { |pix| new_row[pix] = true }
+    new_row = old_row[-delta..-1] + old_row[0..-delta - 1]
     replace_row(y, new_row)
   end
 
